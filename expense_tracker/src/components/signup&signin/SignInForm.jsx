@@ -2,6 +2,7 @@ import React, { useContext, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './SignInForm.css';
 import AuthContext from '../../Store/Context';
+import ExpenseForm from '../Expenses/ExpenseForm';
 
 const SignInForm = () => {
     const [errorMessage, setErrorMessage] = useState('');
@@ -37,7 +38,7 @@ const SignInForm = () => {
             if (data.error) {
                 setErrorMessage(data.error.message);
             } else {
-                history('/welcome');
+                history('/expense');
             }
         })
         .catch(error => {
@@ -123,3 +124,4 @@ const SignInForm = () => {
 };
 
 export default SignInForm;
+
