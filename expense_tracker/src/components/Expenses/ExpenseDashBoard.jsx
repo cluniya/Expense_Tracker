@@ -1,19 +1,35 @@
 // ExpenseDashboard.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ExpenseDashBoard.css';
 import ExpenseForm from './ExpenseForm';
 
 const ExpenseDashboard = () => {
     const [showModal, setShowModal] = useState(false);
-    const [expenses, setExpenses] = useState([
-        { date: '2024-06-01', amount: 50, description: 'Groceries', category: 'Food' },
-        { date: '2024-06-02', amount: 20, description: 'Gas', category: 'Transport' },
-    ]);
+    const [expenses, setExpenses] = useState([]);
+
+    useEffect(() => {
+        const fetchExpenses = async () => {
+            try {
+                const response = await fetch('https://expense-tracker-3498f-default-rtdb.firebaseio.com/expenses.json');
+                const data = await response.json();
+
+                const expenseList = [];
+                for (let id in data) {
+                    expenseList.push({ id, ...data[id] });
+                }
+                setExpenses(expenseList);
+            } catch (error) {
+                console.error('Error fetching expenses:', error);
+            }
+        };
+
+        fetchExpenses();
+    }, []);
 
     const handleShow = () => setShowModal(true);
     const handleClose = () => setShowModal(false);
 
-    const addExpense = (expense) => {
+    const handleExpenseAdded = (expense) => {
         setExpenses([...expenses, expense]);
         handleClose();
     };
@@ -33,8 +49,8 @@ const ExpenseDashboard = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {expenses.map((expense, index) => (
-                        <tr key={index}>
+                    {expenses.map((expense) => (
+                        <tr key={expense.id}>
                             <td>{expense.date}</td>
                             <td>${expense.amount}</td>
                             <td>{expense.description}</td>
@@ -54,7 +70,7 @@ const ExpenseDashboard = () => {
                             </button>
                         </div>
                         <div className="modal-body">
-                            <ExpenseForm addExpense={addExpense} />
+                            <ExpenseForm onExpenseAdded={handleExpenseAdded} />
                         </div>
                         <div className="modal-footer">
                             <button className="btn" onClick={handleClose}>Close</button>
