@@ -6,17 +6,17 @@ const Counter = () => {
     const counter = useSelector(state => state.counter);
 
     const increment = ()=>{
-        dispatch({type : 'INCREMENTBY2'});
+        dispatch({type : 'INCREMENTBY5'});
     }
     const decrement = ()=>{
-        dispatch({type : 'DECREMENTBY2'});
+        dispatch({type : 'DECREMENTBY5'});
     }
 
     return (
         <div>
             <h1>Counter: {counter}</h1>
-            <button onClick={increment}>Increment</button>
-            <button onClick={decrement}>Decrement</button>
+            <button onClick={increment}>IncrementBy5</button>
+            <button onClick={decrement}>DecrementBy5</button>
         </div>
     );
 };
