@@ -1,16 +1,24 @@
 // UpdateProfile.js
-import React, { useContext, useState,useRef } from 'react';
+import React, { useContext, useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './UpdateProfile.css';
 import AuthContext from '../../Store/Context';
 
 const UpdateProfile = () => {
-    // const [fullName, setFullName] = useState('');
-    // const [profilePhotoUrl, setProfilePhotoUrl] = useState('');
     const [message, setMessage] = useState('');
     const authCtx = useContext(AuthContext);
+    const history = useNavigate();
 
     const nameRef = useRef();
     const profileUrlRef = useRef();
+
+    // Use useEffect to set the initial values of the form fields
+    useEffect(() => {
+        if (authCtx.authState.user) {
+            nameRef.current.value = authCtx.authState.user.displayName || '';
+            profileUrlRef.current.value = authCtx.authState.user.photoUrl || '';
+        }
+    }, [authCtx.authState.user]);
 
     const url = 'https://identitytoolkit.googleapis.com/v1/accounts:update?key=AIzaSyCcBuvzyLwpD9UmfaBIQHVd8UwDvBfucG0';
 
@@ -18,14 +26,14 @@ const UpdateProfile = () => {
         e.preventDefault();
 
         const enteredName = nameRef.current.value;
-        const enteredProfileUrl = nameRef.current.value;
+        const enteredProfileUrl = profileUrlRef.current.value;
+
         fetch(url, {
             method: 'POST',
             body: JSON.stringify({
-                idToken : authCtx.token,
-                displayName : enteredName,
+                idToken: authCtx.authState.token,
+                displayName: enteredName,
                 photoUrl: enteredProfileUrl,
-                deleteAttribute : null,
                 returnSecureToken: false
             }),
             headers: {
@@ -35,20 +43,18 @@ const UpdateProfile = () => {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                setMessaget(data.error.message);
-                console.log(data.error.message);
+                setMessage(data.error.message);
             } else {
-                console.log(data);
-                history('/welcome'); // Redirect to a dashboard or home page upon successful login
+                setMessage('Profile updated successfully!');
+                // Optionally update the context with the new user details
+                authCtx.setAuthInfo(authCtx.authState.token); // This will refetch user details
+                history('/welcome'); // Redirect to the welcome page
             }
         })
         .catch(error => {
-            // setErrorMessage('Update Profile failed');
             console.error('Error:', error);
+            setMessage('Update Profile failed');
         });
-        // Here you would typically make an API call to update the profile
-        // For this example, we are just setting a success message
-        setMessage('Profile updated successfully!');
     };
 
     return (
@@ -65,7 +71,7 @@ const UpdateProfile = () => {
 
                 <label htmlFor="profile_photo_url">Profile Photo URL:</label><br />
                 <input
-                    type="url"
+                    type="text"
                     id="profile_photo_url"
                     ref={profileUrlRef}
                     required
