@@ -1,9 +1,11 @@
 import React, { useRef, useState } from 'react';
 import '../signup&signin/SignUpForm.css';
+import { useNavigate } from 'react-router-dom';
 
 const SignUpForm = () => {
     const [isFormValid, setIsFormValid] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const navigate = useNavigate();
     const emailRef = useRef();
     const passwordRef = useRef();
     const confirmPassRef = useRef();
@@ -31,7 +33,6 @@ const SignUpForm = () => {
 
         // Proceed with form submission
         const url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCcBuvzyLwpD9UmfaBIQHVd8UwDvBfucG0';
-        
         fetch(url, {
             method: 'POST',
             body: JSON.stringify({
@@ -44,7 +45,13 @@ const SignUpForm = () => {
             }
         })
         .then(response => response.json())
-        .then(data => console.log(data))
+        .then(data => {
+            if(data.error){
+                setErrorMessage(data.error)
+            }else{
+                navigate('/signin')
+            }
+        })
         .catch(error => console.error('Error:', error));
     };
 
@@ -67,7 +74,7 @@ const SignUpForm = () => {
             {errorMessage && <p className="error-message">{errorMessage}</p>}
 
             <div className="login-link">
-                <p>Already have an account? <a href="/login">Login</a></p>
+                <p>Already have an account? <a href="/signin">Login</a></p>
             </div>
         </div>
     );
