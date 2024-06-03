@@ -5,9 +5,12 @@ import SignInForm from './components/signup&signin/SignInForm';
 import SignUpForm from './components/signup&signin/SignUpForm'
 import Welcome from './components/Layout/Welcome';
 import UpdateProfile from './components/Profile/UpdateProfile';
+import Navbar from './components/Layout/Navbar';
 const App = () => {
     return (
+        <>
         <Router>
+            <Navbar/>
             <div className="App">
                 <Routes>
                     <Route path="/" element={<SignUpForm/>} />
@@ -18,6 +21,7 @@ const App = () => {
                 </Routes>
             </div>
         </Router>
+        </>
     );
 };
 

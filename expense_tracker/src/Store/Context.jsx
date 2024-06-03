@@ -5,8 +5,8 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [authState, setAuthState] = useState({
-        token: null,
-        isAuthenticated: false,
+        token: localStorage.getItem('token'),
+        isAuthenticated: !!localStorage.getItem('token'),
         user: null,
     });
 
@@ -38,8 +38,14 @@ export const AuthProvider = ({ children }) => {
     };
 
     const setAuthInfo = (token) => {
-        setAuthState({ token, isAuthenticated: !!token, user: null });
-        fetchUserDetails(token);
+        if (token) {
+            localStorage.setItem('token', token);
+            setAuthState({ token, isAuthenticated: true, user: null });
+            fetchUserDetails(token);
+        } else {
+            localStorage.removeItem('token');
+            setAuthState({ token: null, isAuthenticated: false, user: null });
+        }
     };
 
     return (
