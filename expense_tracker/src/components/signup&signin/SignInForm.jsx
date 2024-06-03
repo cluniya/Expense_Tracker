@@ -1,17 +1,17 @@
 // SignInForm.js
-import React, { useRef, useState } from 'react';
+import React, {  useContext, useRef, useState } from 'react';
 // import { Navigate } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import './SignInForm.css';
+import AuthContext from '../../Store/Context';
 
 const SignInForm = () => {
     const [errorMessage, setErrorMessage] = useState('');
-
+    const authCtx = useContext(AuthContext);
     const emailRef = useRef();
     const passwordRef = useRef();
     const history = useNavigate();
 
-    let token;
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -33,8 +33,7 @@ const SignInForm = () => {
         })
         .then(response => response.json())
         .then(data => {
-            token = data.idToken;
-            console.log(token);
+            authCtx.setAuthInfo(data.idToken);
             if (data.error) {
                 setErrorMessage(data.error.message);
             } else {
