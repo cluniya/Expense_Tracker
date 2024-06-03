@@ -1,19 +1,27 @@
-// ExpenseForm.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ExpenseForm.css';
 
-const ExpenseForm = ({ onExpenseAdded }) => {
+const ExpenseForm = ({ expense, onSave }) => {
     const [date, setDate] = useState('');
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
     const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        if (expense) {
+            setDate(expense.date);
+            setAmount(expense.amount);
+            setDescription(expense.description);
+            setCategory(expense.category);
+        }
+    }, [expense]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
-        const newExpense = {
+        const expenseData = {
             date,
             amount: parseFloat(amount),
             description,
@@ -21,22 +29,36 @@ const ExpenseForm = ({ onExpenseAdded }) => {
         };
 
         try {
-            const response = await fetch('https://expense-tracker-3498f-default-rtdb.firebaseio.com/expenses.json', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newExpense),
-            });
+            if (expense) {
+                // Update existing expense
+                await fetch(`https://expense-tracker-3498f-default-rtdb.firebaseio.com/expenses/${expense.id}.json`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(expenseData),
+                });
+                onSave({ id: expense.id, ...expenseData });
+            } else {
+                // Add new expense
+                const response = await fetch('https://expense-tracker-3498f-default-rtdb.firebaseio.com/expenses.json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(expenseData),
+                });
 
-            const data = await response.json();
-            onExpenseAdded({ id: data.name, ...newExpense });
+                const data = await response.json();
+                onSave({ id: data.name, ...expenseData });
+            }
+
             setDate('');
             setAmount('');
             setDescription('');
             setCategory('');
         } catch (error) {
-            console.error('Error adding expense:', error);
+            console.error('Error saving expense:', error);
         } finally {
             setLoading(false);
         }
@@ -91,7 +113,7 @@ const ExpenseForm = ({ onExpenseAdded }) => {
                 </select>
             </div>
             <button type="submit" className="btn" disabled={loading}>
-                {loading ? 'Adding...' : 'Add Expense'}
+                {loading ? 'Saving...' : expense ? 'Update Expense' : 'Add Expense'}
             </button>
         </form>
     );

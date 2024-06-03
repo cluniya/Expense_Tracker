@@ -1,4 +1,3 @@
-// ExpenseDashboard.js
 import React, { useState, useEffect } from 'react';
 import './ExpenseDashBoard.css';
 import ExpenseForm from './ExpenseForm';
@@ -6,6 +5,7 @@ import ExpenseForm from './ExpenseForm';
 const ExpenseDashboard = () => {
     const [showModal, setShowModal] = useState(false);
     const [expenses, setExpenses] = useState([]);
+    const [editingExpense, setEditingExpense] = useState(null);
 
     useEffect(() => {
         const fetchExpenses = async () => {
@@ -27,11 +27,35 @@ const ExpenseDashboard = () => {
     }, []);
 
     const handleShow = () => setShowModal(true);
-    const handleClose = () => setShowModal(false);
+    const handleClose = () => {
+        setShowModal(false);
+        setEditingExpense(null);
+    };
 
-    const handleExpenseAdded = (expense) => {
-        setExpenses([...expenses, expense]);
+    const handleExpenseAddedOrUpdated = (expense) => {
+        if (editingExpense) {
+            setExpenses(expenses.map(exp => (exp.id === expense.id ? expense : exp)));
+        } else {
+            setExpenses([...expenses, expense]);
+        }
         handleClose();
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            await fetch(`https://expense-tracker-3498f-default-rtdb.firebaseio.com/expenses/${id}.json`, {
+                method: 'DELETE',
+            });
+            setExpenses(expenses.filter(expense => expense.id !== id));
+            console.log('Expense successfully deleted');
+        } catch (error) {
+            console.error('Error deleting expense:', error);
+        }
+    };
+
+    const handleEdit = (expense) => {
+        setEditingExpense(expense);
+        setShowModal(true);
     };
 
     return (
@@ -46,6 +70,7 @@ const ExpenseDashboard = () => {
                         <th>Amount</th>
                         <th>Description</th>
                         <th>Category</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,6 +80,10 @@ const ExpenseDashboard = () => {
                             <td>${expense.amount}</td>
                             <td>{expense.description}</td>
                             <td>{expense.category}</td>
+                            <td>
+                                <button onClick={() => handleEdit(expense)}>Edit</button>
+                                <button onClick={() => handleDelete(expense.id)}>Delete</button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
@@ -64,13 +93,16 @@ const ExpenseDashboard = () => {
                 <div className="modal" onClick={handleClose}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h5 className="modal-title">Add Expense</h5>
+                            <h5 className="modal-title">{editingExpense ? 'Edit Expense' : 'Add Expense'}</h5>
                             <button className="close" onClick={handleClose}>
                                 &times;
                             </button>
                         </div>
                         <div className="modal-body">
-                            <ExpenseForm onExpenseAdded={handleExpenseAdded} />
+                            <ExpenseForm
+                                expense={editingExpense}
+                                onSave={handleExpenseAddedOrUpdated}
+                            />
                         </div>
                         <div className="modal-footer">
                             <button className="btn" onClick={handleClose}>Close</button>
