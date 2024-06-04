@@ -1,14 +1,14 @@
 import { createStore } from "redux";
 
 const reducer = (state = { counter: 0 }, action) => {
-    if (action.type === 'INCREMENTBY2') {
+    if (action.type === 'increase') {
         return {
-            counter: state.counter + 2
+            counter: state.counter + action.amount
         };
     }
-    if (action.type === 'DECREMENTBY2') {
+    if (action.type === 'decrese') {
         return {
-            counter: state.counter - 2
+            counter: state.counter - action.amount
         };
     }
     return state; // Return the current state if no action matches
