@@ -4,16 +4,18 @@ import './ExpenseDashBoard.css';
 import ExpenseForm from './ExpenseForm';
 import { fetchExpenses } from '../../Stores/expensesSlice';
 import { useDispatch, useSelector } from 'react-redux';
+import Premiums from '../Premium/Premiums';
+import ExpenseDownload from '../DownloadData/ExpenseDownload';
 
 
 
 const ExpenseDashboard = () => {
     const [showModal, setShowModal] = useState(false);
-    const [expenses, setExpenses] = useState([]);
+    // const [expenses, setExpenses] = useState([]);
     const [premium , setpremium] = useState(false)
 
-    // const expenses = useSelector(state => state.expenses.items);
-    // console.log(expenses);
+    const expenses = useSelector(state => state.expenses.items);
+    console.log(expenses);
 
 
     const [editingExpense, setEditingExpense] = useState(null);
@@ -21,33 +23,10 @@ const ExpenseDashboard = () => {
 
     useEffect(()=>{
         dispatch(fetchExpenses())
-        
-    },[dispatch])
+        calculateAmount(expenses);
+    },[dispatch,expenses])
 
-    let amount = 0;
-    useEffect(() => {
-        const fetchExpenses = async () => {
-            try {
-                const response = await fetch('https://expense-tracker-3498f-default-rtdb.firebaseio.com/expenses.json');
-                const data = await response.json();
-
-                const expenseList = [];
-                for (let id in data) {
-                    expenseList.push({ id, ...data[id] });
-                }
-                expenseList.map((expense)=>{
-                    amount += expense.amount;
-                })
-                setpremium(amount)
-                setExpenses(expenseList);
-            } catch (error) {
-                console.error('Error fetching expenses:', error);
-            }
-        };
-
-        fetchExpenses();
-    }, []);
-
+    
     const handleShow = () => setShowModal(true);
     const handleClose = () => {
         setShowModal(false);
@@ -74,24 +53,30 @@ const ExpenseDashboard = () => {
             console.error('Error deleting expense:', error);
         }
     };
-
+    
     const handleEdit = (expense) => {
         setEditingExpense(expense);
         setShowModal(true);
     };
 
-    if(premium > 10000){
-        return <div>
-        <p>Amount exceeds 10000. Activate premium to access additional features.</p>
-        <button >Activate Premium</button>
-    </div>
+    const calculateAmount = (expenses)=>{
+        let amount = 0;
+        expenses.map(expense =>{
+            amount += expense.amount;
+        })
+        if (amount > 10000) {
+            setpremium(true);
+        }
     }
 
+    
+
     return (
+        <>
         <div className="expense-dashboard-container">
             <h1>Expense Dashboard</h1>
-            <button className="btn" onClick={handleShow}>Add Expense</button>
-
+            <button className="btn" onClick={handleShow} >Add Expense</button>
+            <ExpenseDownload />
             <table className="expense-table">
                 <thead>
                     <tr>
@@ -140,6 +125,9 @@ const ExpenseDashboard = () => {
                 </div>
             )}
         </div>
+            {premium && <Premiums/>}
+            </>
+
     );
 };
 
