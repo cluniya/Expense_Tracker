@@ -1,16 +1,19 @@
 import React, { useRef, useState } from 'react';
-import '../signup&signin/SignUpForm.css';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { signUp } from '../../Stores/AuthSlice';
+import '../signup&signin/SignUpForm.css';
 
 const SignUpForm = () => {
-    const [isFormValid, setIsFormValid] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { status, error } = useSelector((state) => state.auth);
     const emailRef = useRef();
     const passwordRef = useRef();
     const confirmPassRef = useRef();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const enteredEmail = emailRef.current.value;
@@ -23,36 +26,12 @@ const SignUpForm = () => {
             return;
         }
 
-        // Additional validation logic here if needed
-
-        // If form passes validation
-        setIsFormValid(true);
-
-        // Clear error message
-        setErrorMessage('');
-
-        // Proceed with form submission
-        const url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCcBuvzyLwpD9UmfaBIQHVd8UwDvBfucG0';
-        fetch(url, {
-            method: 'POST',
-            body: JSON.stringify({
-                email: enteredEmail,
-                password: enteredPass,
-                returnSecureToken: true
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.error){
-                setErrorMessage(data.error)
-            }else{
-                navigate('/signin')
-            }
-        })
-        .catch(error => console.error('Error:', error));
+        try {
+            await dispatch(signUp({ email: enteredEmail, password: enteredPass })).unwrap();
+            navigate('/signin');
+        } catch (err) {
+            setErrorMessage(err.message);
+        }
     };
 
     return (
@@ -71,7 +50,9 @@ const SignUpForm = () => {
                 <input type="submit" value="Sign Up" />
             </form>
 
+            {status === 'loading' && <p>Loading...</p>}
             {errorMessage && <p className="error-message">{errorMessage}</p>}
+            {error && <p className="error-message">{error}</p>}
 
             <div className="login-link">
                 <p>Already have an account? <a href="/signin">Login</a></p>

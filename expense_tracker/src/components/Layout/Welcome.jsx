@@ -2,7 +2,7 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Welcome.css';
-import AuthContext from '../../Store/Context';
+import AuthContext from '../../Stores/Context';
 
 const Welcome = () => {
     const history = useNavigate();

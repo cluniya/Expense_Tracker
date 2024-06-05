@@ -1,96 +1,59 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { signIn, resetPassword } from '../../Stores/AuthSlice';
 import './SignInForm.css';
-import AuthContext from '../../Store/Context';
-import ExpenseForm from '../Expenses/ExpenseForm';
 
 const SignInForm = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
-    const authCtx = useContext(AuthContext);
     const passwordRef = useRef();
     const emailRef = useRef();
     const history = useNavigate();
+    const dispatch = useDispatch();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const enteredEmail = emailRef.current.value;
         const enteredPass = passwordRef.current.value;
 
-        // Proceed with form submission
-        const url = 'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCcBuvzyLwpD9UmfaBIQHVd8UwDvBfucG0';
-        fetch(url, {
-            method: 'POST',
-            body: JSON.stringify({
-                email: enteredEmail,
-                password: enteredPass,
-                returnSecureToken: true
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            authCtx.setAuthInfo(data.idToken);
-            if (data.error) {
-                setErrorMessage(data.error.message);
-            } else {
-                history('/expense');
-            }
-        })
-        .catch(error => {
+        try {
+            await dispatch(signIn({ email: enteredEmail, password: enteredPass })).unwrap();
+            history('/expense');
+        } catch (error) {
             setErrorMessage('Authentication failed');
             console.error('Error:', error);
-        });
+        }
     };
 
     const handleForgotPassword = () => {
         setShowForgotPassword(true);
     };
 
-    const handleResetPassword = () => {
+    const handleResetPassword = async () => {
         const enteredEmail = emailRef.current.value;
         setLoading(true);
 
-        // Call Firebase API for password reset
-        const url = 'https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyCcBuvzyLwpD9UmfaBIQHVd8UwDvBfucG0';
-        fetch(url, {
-            method: 'POST',
-            body: JSON.stringify({
-                requestType: 'PASSWORD_RESET',
-                email: enteredEmail,
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                setErrorMessage(data.error.message);
-            } else {
-                setSuccessMessage('A password reset link has been sent to your email.');
-            }
-        })
-        .catch(error => {
+        try {
+            await dispatch(resetPassword(enteredEmail)).unwrap();
+            setSuccessMessage('A password reset link has been sent to your email.');
+        } catch (error) {
             setErrorMessage('An error occurred while processing your request');
             console.error('Error:', error);
-        })
-        .finally(() => {
+        } finally {
             setLoading(false);
-        });
+        }
     };
 
     return (
         <div className="signin-container">
-            {!showForgotPassword ? <h2>Sign In</h2>:<h2>Reset Password</h2>}
+            {!showForgotPassword ? <h2>Sign In</h2> : <h2>Reset Password</h2>}
             <form onSubmit={handleSubmit}>
                 <label htmlFor="email">Email:</label><br />
                 <input type="email" id="email" ref={emailRef} required /><br /><br />
-                
+
                 {!showForgotPassword && (
                     <>
                         <label htmlFor="password">Password:</label><br />
@@ -102,13 +65,12 @@ const SignInForm = () => {
                     <input type="submit" value="Sign In" />
                 ) : (
                     <>
-                        <button onClick={handleResetPassword}>Reset Password</button><br /><br />
+                        <button type="button" onClick={handleResetPassword}>Reset Password</button><br /><br />
                     </>
                 )}
             </form>
 
             {errorMessage && <p className="error-message">{errorMessage}</p>}
-
             {successMessage && <p className="success-message">{successMessage}</p>}
 
             <div className="signin-links">
@@ -124,4 +86,3 @@ const SignInForm = () => {
 };
 
 export default SignInForm;
-

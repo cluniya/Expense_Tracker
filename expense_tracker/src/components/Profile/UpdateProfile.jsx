@@ -2,7 +2,7 @@
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UpdateProfile.css';
-import AuthContext from '../../Store/Context';
+import AuthContext from '../../Stores/Context';
 
 const UpdateProfile = () => {
     const [message, setMessage] = useState('');
