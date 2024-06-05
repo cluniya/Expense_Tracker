@@ -1,12 +1,30 @@
+
 import React, { useState, useEffect } from 'react';
 import './ExpenseDashBoard.css';
 import ExpenseForm from './ExpenseForm';
+import { fetchExpenses } from '../../Stores/expensesSlice';
+import { useDispatch, useSelector } from 'react-redux';
+
+
 
 const ExpenseDashboard = () => {
     const [showModal, setShowModal] = useState(false);
     const [expenses, setExpenses] = useState([]);
-    const [editingExpense, setEditingExpense] = useState(null);
+    const [premium , setpremium] = useState(false)
 
+    // const expenses = useSelector(state => state.expenses.items);
+    // console.log(expenses);
+
+
+    const [editingExpense, setEditingExpense] = useState(null);
+    const dispatch = useDispatch();
+
+    useEffect(()=>{
+        dispatch(fetchExpenses())
+        
+    },[dispatch])
+
+    let amount = 0;
     useEffect(() => {
         const fetchExpenses = async () => {
             try {
@@ -17,6 +35,10 @@ const ExpenseDashboard = () => {
                 for (let id in data) {
                     expenseList.push({ id, ...data[id] });
                 }
+                expenseList.map((expense)=>{
+                    amount += expense.amount;
+                })
+                setpremium(amount)
                 setExpenses(expenseList);
             } catch (error) {
                 console.error('Error fetching expenses:', error);
@@ -57,6 +79,13 @@ const ExpenseDashboard = () => {
         setEditingExpense(expense);
         setShowModal(true);
     };
+
+    if(premium > 10000){
+        return <div>
+        <p>Amount exceeds 10000. Activate premium to access additional features.</p>
+        <button >Activate Premium</button>
+    </div>
+    }
 
     return (
         <div className="expense-dashboard-container">

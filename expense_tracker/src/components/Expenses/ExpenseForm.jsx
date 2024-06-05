@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './ExpenseForm.css';
-
+import { useDispatch } from 'react-redux';
+import { addExpense } from '../../Stores/expensesSlice';
 const ExpenseForm = ({ expense, onSave }) => {
     const [date, setDate] = useState('');
     const [amount, setAmount] = useState('');
@@ -8,6 +9,7 @@ const ExpenseForm = ({ expense, onSave }) => {
     const [category, setCategory] = useState('');
     const [loading, setLoading] = useState(false);
 
+    const dispatch = useDispatch();
     useEffect(() => {
         if (expense) {
             setDate(expense.date);
@@ -29,30 +31,9 @@ const ExpenseForm = ({ expense, onSave }) => {
         };
 
         try {
-            if (expense) {
-                // Update existing expense
-                await fetch(`https://expense-tracker-3498f-default-rtdb.firebaseio.com/expenses/${expense.id}.json`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(expenseData),
-                });
-                onSave({ id: expense.id, ...expenseData });
-            } else {
-                // Add new expense
-                const response = await fetch('https://expense-tracker-3498f-default-rtdb.firebaseio.com/expenses.json', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(expenseData),
-                });
+            dispatch(addExpense(expenseData));
 
-                const data = await response.json();
-                onSave({ id: data.name, ...expenseData });
-            }
-
+            // Clear form fields
             setDate('');
             setAmount('');
             setDescription('');
