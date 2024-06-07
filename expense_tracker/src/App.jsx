@@ -11,6 +11,7 @@ import ExpenseDashboard from './components/Expenses/ExpenseDashBoard';
 
 const App = () => {
     const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+    // const text = <p>hello world</p>;
 
     return (
         <>
@@ -27,6 +28,7 @@ const App = () => {
                         </>
                     )}
                     {!isAuthenticated && <Route path="*" element={<Navigate to="/signin" />} />}
+                    <p>hello world</p>
                 </Routes>
             </div>
         </>
@@ -34,3 +36,15 @@ const App = () => {
 };
 
 export default App;
+
+// import React from 'react'
+
+// const App = () => {
+//   return (
+//     <div>
+//       <p>hello world</p>
+//     </div>
+//   )
+// }
+
+// export default App
